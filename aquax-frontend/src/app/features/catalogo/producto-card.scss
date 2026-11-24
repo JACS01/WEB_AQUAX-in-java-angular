@@ -1,0 +1,129 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.product-card {
+  height: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 12px #0046780d;
+  transition:
+    border-color 180ms,
+    box-shadow 180ms,
+    transform 180ms;
+}
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px #0046781a;
+}
+.product-card.selected {
+  border-color: var(--teal, #0077b6);
+  box-shadow:
+    0 0 0 2px var(--teal, #0077b6),
+    0 6px 18px #00467814;
+}
+.product-art {
+  background: #fff;
+  height: 220px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+}
+.product-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.product-placeholder {
+  height: 105px;
+  color: var(--teal, #0077b6);
+  opacity: 0.5;
+}
+.product-info {
+  padding: 20px;
+}
+.product-info h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.product-info p {
+  font-size: 0.78rem;
+  min-height: 38px;
+  margin-bottom: 18px;
+}
+.product-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.product-bottom > strong {
+  color: var(--teal, #0077b6);
+  font-size: 1.12rem;
+}
+.quantity {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.quantity button {
+  background: #e8f4fd;
+  border: 0;
+  width: 32px;
+  height: 36px;
+  color: var(--teal, #0077b6);
+  padding: 0;
+}
+.quantity button:hover:not(:disabled) {
+  background: #cce5f5;
+}
+.quantity input {
+  width: 38px;
+  padding: 4px 0;
+  text-align: center;
+  border: 0;
+  min-height: 34px;
+  font-size: 0.8rem;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  border-radius: 0;
+}
+.quantity input::-webkit-inner-spin-button {
+  appearance: none;
+}
+@media (max-width: 600px) {
+  .product-art {
+    height: 165px;
+    padding: 10px;
+  }
+  .product-info {
+    padding: 14px;
+  }
+  .product-info h3 {
+    font-size: 0.9rem;
+  }
+  .product-info p {
+    font-size: 0.75rem;
+    min-height: 42px;
+  }
+  .product-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card {
+    transition: none;
+  }
+  .product-card:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,256 @@
+:host {
+  display: block;
+}
+.public-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px max(40px, calc((100% - 1220px) / 2));
+  background: #023e58;
+  color: #fff;
+  border-bottom: 1px solid #00b4d84d;
+  box-shadow: 0 3px 14px #00467814;
+}
+.public-header .brand,
+.public-header .brand-x {
+  color: #fff;
+}
+.public-header nav {
+  display: flex;
+  align-items: center;
+  gap: 33px;
+  font-size: 0.8rem;
+  color: #d1e9fa;
+}
+.public-header nav > a:hover {
+  color: #fff;
+}
+.public-header .button.secondary {
+  border-color: #b8daf58c;
+  background: transparent;
+  color: #fff;
+}
+.public-header .button.secondary:hover {
+  background: #035272;
+  border-color: #00b4d8;
+}
+.public-main {
+  max-width: 1300px;
+  margin: auto;
+  padding: 0 40px;
+}
+.public-hero {
+  padding: 54px 48px;
+  margin: 30px 0 34px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+  background:
+    radial-gradient(ellipse at 30% 20%, #00b4d826, transparent 65%),
+    linear-gradient(135deg, #021e30 0%, #023e58 45%, #0077b6 100%);
+  border: 1px solid #a8cfe633;
+  border-radius: 24px;
+  color: #fff;
+  box-shadow: 0 12px 32px #0046781f;
+}
+.public-hero .eyebrow {
+  color: #77ddf2;
+}
+.public-hero h1 {
+  font-size: 3.7rem;
+  letter-spacing: -1.9px;
+  line-height: 1.06;
+  font-weight: 650;
+  margin: 20px 0 22px;
+  overflow-wrap: break-word;
+}
+.public-hero h1 > span {
+  color: #48cae4;
+}
+.public-hero p {
+  font-size: 0.95rem;
+  color: #d1e9fa;
+  margin-bottom: 28px;
+}
+.public-hero .button {
+  background: #00b4d8;
+  color: #023e58;
+  border-color: #00b4d8;
+  font-weight: 700;
+}
+.public-hero .button:hover {
+  background: #48cae4;
+  border-color: #48cae4;
+}
+.hero-water {
+  height: 340px;
+  border-radius: 50% 50% 43% 47%;
+  background: radial-gradient(circle at 50% 65%, #00b4d82e, transparent 65%), #ffffff0d;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #d1e9fa;
+  border: 1px solid #b8daf540;
+}
+.hero-water > app-icon {
+  font-size: 8rem;
+  color: #48cae4;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+.hero-water > span {
+  font-size: 0.8rem;
+  z-index: 1;
+}
+.hero-water .water-caption {
+  font-size: 0.47rem;
+  letter-spacing: 2px;
+  position: absolute;
+  bottom: 29px;
+}
+.water-orbit {
+  position: absolute;
+  width: 270px;
+  height: 270px;
+  border: 1px solid #48cae459;
+  border-radius: 50%;
+  top: -80px;
+  right: -15px;
+}
+.water-orbit:after {
+  content: '';
+  position: absolute;
+  inset: -30px;
+  border: 1px solid #b8daf538;
+  border-radius: 50%;
+}
+.catalog-section {
+  padding-top: 24px;
+  border-top: 1px solid #c5dff0;
+  padding-bottom: 60px;
+  scroll-margin-top: 20px;
+}
+.hero-delivery {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.public-footer {
+  border-top: 1px solid #00b4d84d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px max(40px, calc((100% - 1220px) / 2));
+  font-size: 0.73rem;
+  color: #b8daf5;
+  background: #021e30;
+}
+.public-footer .brand {
+  font-size: 1.2rem;
+  color: #fff;
+}
+.public-footer .brand-x {
+  color: #48cae4;
+}
+
+@media (max-width: 1150px) {
+  .public-hero h1 {
+    font-size: 3.15rem;
+  }
+}
+@media (max-width: 850px) {
+  .public-header,
+  .public-main {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .public-hero {
+    gap: 24px;
+    padding: 36px 28px;
+  }
+  .public-hero h1 {
+    font-size: 2.65rem;
+  }
+  .hero-water {
+    height: 280px;
+  }
+  .public-footer {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .public-header nav > a[href='#catalogo'] {
+    display: none;
+  }
+  .public-header nav {
+    gap: 16px;
+  }
+  .public-hero p br {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .public-header {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .public-header nav {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .public-header .button {
+    font-size: 0.7rem;
+    padding: 8px 12px;
+    min-height: 38px;
+  }
+  .public-hero {
+    grid-template-columns: 1fr;
+    padding: 28px 22px;
+    gap: 28px;
+    margin-top: 24px;
+    border-radius: 18px;
+  }
+  .public-hero h1 {
+    font-size: clamp(2rem, 8vw, 3rem);
+    letter-spacing: -1.2px;
+  }
+  .public-hero p {
+    font-size: 0.85rem;
+  }
+  .hero-water {
+    height: 220px;
+    border-radius: 20px;
+  }
+  .hero-water > app-icon {
+    font-size: 5rem;
+  }
+  .hero-water .water-caption {
+    bottom: 15px;
+  }
+  .hero-water > span {
+    font-size: 0.7rem;
+  }
+  .catalog-section .page-heading h2 {
+    font-size: 1.4rem;
+  }
+  .hero-delivery {
+    font-size: 0.68rem;
+  }
+  .public-footer {
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.65rem;
+  }
+  .public-footer > span:nth-child(2) {
+    display: none;
+  }
+}

@@ -1,0 +1,65 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">{{ i18n.t('notifications.eyebrow') }}</span>
+    <h1>{{ i18n.t('notifications.title') }}</h1>
+    <p class="muted">{{ i18n.t('notifications.description') }}</p>
+  </div>
+  <button class="button secondary" [disabled]="busy() || loading()" (click)="markAll()">
+    {{ i18n.t('notifications.markAll') }}
+  </button>
+</div>
+<div class="toolbar">
+  <label class="check-label"
+    ><input type="checkbox" [ngModel]="unread()" (ngModelChange)="unread.set($event); load()" />{{
+      i18n.t('notifications.unreadOnly')
+    }}</label
+  ><button class="text-link" [disabled]="loading()" (click)="load()">
+    {{ i18n.t('notifications.refresh') }}
+  </button>
+</div>
+@if (error()) {
+  <div class="notice error" role="alert">{{ error() }}</div>
+}
+@if (loading()) {
+  <div class="card empty" role="status">{{ i18n.t('notifications.loading') }}</div>
+} @else {
+  <section class="card notification-list">
+    @for (n of items(); track n.id) {
+      <article class="notification-item" [class.unread]="!n.leida">
+        <span class="notification-icon"><app-icon name="orders" /></span>
+        <div>
+          <div class="notification-title">
+            <h3>{{ notificationTitle(n) }}</h3>
+            @if (!n.leida) {
+              <span class="badge">{{ i18n.t('notifications.unread') }}</span>
+            }
+          </div>
+          <p>{{ notificationMessage(n) }}</p>
+          <small class="muted"
+            >{{ n.fechaCreacion | date: 'dd MMM yyyy, HH:mm' : '-0500' : i18n.locale() }} ·
+            {{ n.numeroPedido }}</small
+          >
+          <div class="actions">
+            <a
+              class="text-link"
+              routerLink="/panel/pedidos"
+              [queryParams]="{ pedido: n.pedidoId }"
+              >{{ i18n.t('notifications.viewOrder') }}</a
+            >
+            @if (!n.leida) {
+              <button class="text-link" [disabled]="busy()" (click)="mark(n)">
+                {{ i18n.t('notifications.markRead') }}
+              </button>
+            }
+          </div>
+        </div>
+      </article>
+    } @empty {
+      <div class="empty">
+        <app-icon name="bell" />
+        <h3>{{ i18n.t('notifications.upToDate') }}</h3>
+        <p>{{ i18n.t(unread() ? 'notifications.emptyUnread' : 'notifications.empty') }}</p>
+      </div>
+    }
+  </section>
+}

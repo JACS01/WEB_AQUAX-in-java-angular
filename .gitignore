@@ -1,0 +1,8 @@
+/target/
+/.classpath
+/.project
+/.settings/
+/aquax.db
+/aquax.db-journal
+/aquax.db-wal
+/aquax.db-shm

@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+.card {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.card > .page-heading {
+  margin-bottom: 18px;
+}
+.card > h2 {
+  margin-bottom: 20px;
+}
+.toolbar > .field:first-child {
+  flex: 2;
+}
+.toolbar > .field:has(select) {
+  flex: 0 1 150px;
+}
+.table-wrap {
+  margin-top: 10px;
+}
+.pagination {
+  padding: 20px 0 0;
+  border-top: 1px solid var(--border);
+}
+.split {
+  margin: 22px 0;
+  align-items: start;
+}
+.split > form {
+  min-width: 0;
+}
+.split .form-grid {
+  grid-template-columns: 1fr;
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+.notice h2 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+.notice p {
+  margin-bottom: 15px;
+}
+@media (max-width: 700px) {
+  .card {
+    padding: 18px;
+  }
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .toolbar > .field:first-child {
+    flex-basis: 100%;
+  }
+  .toolbar > .field:has(select) {
+    flex: 1;
+  }
+  .split {
+    grid-template-columns: 1fr;
+  }
+  .pagination {
+    justify-content: space-between;
+  }
+}

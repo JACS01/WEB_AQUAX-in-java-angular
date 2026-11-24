@@ -1,0 +1,92 @@
+<header class="page-heading">
+  <div>
+    <p class="eyebrow">{{ i18n.t('admin.administration') }}</p>
+    <h1>{{ i18n.t('admin.companyTitle') }}</h1>
+    <p class="muted">{{ i18n.t('admin.companyDescription') }}</p>
+  </div>
+</header>
+@if (success()) {
+  <div class="notice success" role="status">{{ success() }}</div>
+}
+@if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }}
+    @if (!loaded()) {
+      <button class="button secondary" type="button" (click)="load()">
+        {{ i18n.t('admin.retry') }}
+      </button>
+    }
+  </div>
+}
+@if (loading()) {
+  <section class="card empty" role="status">{{ i18n.t('admin.loadingCompany') }}</section>
+}
+@if (loaded() && !loading()) {
+  <section class="card">
+    <h2>{{ i18n.t('admin.businessInformation') }}</h2>
+    <p class="muted">
+      @if (updated()) {
+        {{ i18n.t('admin.lastUpdated') }}
+        {{ updated() | date: 'mediumDate' : undefined : i18n.locale() }}
+      }
+    </p>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <label class="field"
+          >{{ i18n.t('admin.businessName')
+          }}<input
+            formControlName="razonSocial"
+            autocomplete="organization" /><app-admin-field-error
+            [control]="form.controls.razonSocial"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.ruc')
+          }}<input
+            formControlName="ruc"
+            inputmode="numeric"
+            maxlength="11"
+            [placeholder]="i18n.t('admin.elevenDigits')" /><app-admin-field-error
+            [control]="form.controls.ruc"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.address')
+          }}<input
+            formControlName="direccion"
+            autocomplete="street-address" /><app-admin-field-error
+            [control]="form.controls.direccion"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.contactEmail')
+          }}<input
+            formControlName="correo"
+            type="email"
+            autocomplete="email" /><app-admin-field-error [control]="form.controls.correo"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.primaryPhone')
+          }}<input formControlName="telefono1" type="tel" /><app-admin-field-error
+            [control]="form.controls.telefono1"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.secondaryPhone')
+          }}<input formControlName="telefono2" type="tel" /><app-admin-field-error
+            [control]="form.controls.telefono2"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.healthRegistration')
+          }}<textarea formControlName="registroSanitario" rows="3"></textarea
+          ><app-admin-field-error [control]="form.controls.registroSanitario"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('admin.slogan') }}<textarea formControlName="slogan" rows="3"></textarea
+          ><app-admin-field-error [control]="form.controls.slogan"
+        /></label>
+      </div>
+      <div class="actions">
+        <button class="button" [disabled]="saving() || loading() || !loaded()">
+          {{ saving() ? i18n.t('admin.saving') : i18n.t('admin.saveInformation') }}
+        </button>
+      </div>
+    </form>
+  </section>
+}

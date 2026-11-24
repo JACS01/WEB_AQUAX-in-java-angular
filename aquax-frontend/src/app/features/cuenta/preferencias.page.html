@@ -1,0 +1,74 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">{{ i18n.t('preferences.eyebrow') }}</span>
+    <h1>{{ i18n.t('preferences.title') }}</h1>
+    <p class="muted">{{ i18n.t('preferences.description') }}</p>
+  </div>
+</div>
+@if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }} <button class="text-link" (click)="load()">{{ i18n.t('common.reload') }}</button>
+  </div>
+}
+@if (saved()) {
+  <div class="notice success" role="status">{{ i18n.t('preferences.saved') }}</div>
+}
+<section class="card settings-card preference-card">
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="preference-row">
+      <div>
+        <h3>{{ i18n.t('preferences.displaySize') }}</h3>
+        <p class="muted">{{ i18n.t('preferences.displayDescription') }}</p>
+      </div>
+      <label class="field"
+        ><span class="sr-only">{{ i18n.t('preferences.zoomLevel') }}</span
+        ><select formControlName="nivelZoom">
+          @for (z of levels; track z) {
+            <option [ngValue]="z">{{ z }} %</option>
+          }
+        </select></label
+      >
+    </div>
+    <div class="preference-row">
+      <div>
+        <h3>{{ i18n.t('preferences.language') }}</h3>
+        <p class="muted">{{ i18n.t('preferences.languageDescription') }}</p>
+      </div>
+      <label class="field"
+        ><span class="sr-only">{{ i18n.t('preferences.language') }}</span
+        ><select formControlName="idioma">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+        </select></label
+      >
+    </div>
+    <div class="preference-row">
+      <div>
+        <h3>{{ i18n.t('preferences.colorFilter') }}</h3>
+        <p class="muted">{{ i18n.t('preferences.filterDescription') }}</p>
+      </div>
+      <label class="field"
+        ><span class="sr-only">{{ i18n.t('preferences.colorFilter') }}</span
+        ><select formControlName="filtroColor">
+          @for (f of filters; track f.value) {
+            <option [value]="f.value">{{ i18n.t(f.label) }}</option>
+          }
+        </select></label
+      >
+    </div>
+    <label class="check-label"
+      ><input type="checkbox" formControlName="filtroColorActivo" />{{
+        i18n.t('preferences.applyFilter')
+      }}</label
+    >
+    <div class="actions preference-actions">
+      <button class="button" [disabled]="busy() || loading() || !loaded()">
+        {{
+          i18n.t(busy() ? 'common.saving' : loading() ? 'common.loading' : 'preferences.save')
+        }}</button><button type="button" class="button secondary" (click)="reset()">
+        {{ i18n.t('preferences.reset') }}
+      </button>
+    </div>
+  </form>
+</section>

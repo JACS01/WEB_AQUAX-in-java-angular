@@ -1,0 +1,258 @@
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">{{ i18n.t('orders.eyebrow') }}</p>
+    <h1>{{ i18n.t('orders.title') }}</h1>
+    <p class="muted">{{ i18n.t('orders.description') }}</p>
+  </div>
+  <a class="button" routerLink="/panel/pedidos/nuevo">{{ i18n.t('orders.new') }}</a>
+</div>
+<div class="tabs" [attr.aria-label]="i18n.t('orders.type')">
+  <button type="button" [class.active]="!completados()" (click)="tab(false)">
+    {{ i18n.t('orders.active') }}
+  </button>
+  <button type="button" [class.active]="completados()" (click)="tab(true)">
+    {{ i18n.t('orders.completed') }}
+  </button>
+</div>
+@if (error()) {
+  <div class="notice error" role="alert">{{ error() }}</div>
+}
+@if (success()) {
+  <div class="notice success" role="status">{{ success() }}</div>
+}
+<section class="card" [attr.aria-busy]="loading()">
+  <div class="toolbar">
+    <form (ngSubmit)="search()">
+      <label class="sr-only" for="pedido-search">{{ i18n.t('orders.searchLabel') }}</label><input
+        id="pedido-search"
+        name="texto"
+        [formControl]="table.search"
+        [placeholder]="i18n.t('orders.searchPlaceholder')"
+      /><button class="button secondary" type="submit" [disabled]="loading()">
+        {{ i18n.t('orders.search') }}
+      </button>
+    </form>
+    <label
+      >{{ i18n.t('orders.show')
+      }}<select
+        [attr.aria-label]="i18n.t('orders.perPage')"
+        [ngModel]="table.size()"
+        (ngModelChange)="table.setSize($event)"
+      >
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="25">25</option>
+        <option [ngValue]="50">50</option>
+      </select></label
+    >
+    <label
+      >{{ i18n.t('orders.sort')
+      }}<select
+        [attr.aria-label]="i18n.t('orders.sortOrders')"
+        [ngModel]="table.sort()"
+        (ngModelChange)="table.setSort($event)"
+      >
+        <option value="fechaRegistro,desc">{{ i18n.t('orders.newest') }}</option>
+        <option value="fechaRegistro,asc">{{ i18n.t('orders.oldest') }}</option>
+        <option value="nombreCliente,asc">{{ i18n.t('orders.customerAZ') }}</option>
+        <option value="nombreCliente,desc">{{ i18n.t('orders.customerZA') }}</option>
+        <option value="numeroPedido,desc">{{ i18n.t('orders.numberDesc') }}</option>
+      </select>
+    </label>
+    <button class="button secondary" type="button" (click)="load()" [disabled]="loading()">
+      {{ i18n.t('orders.refresh') }}
+    </button>
+  </div>
+  @if (loading()) {
+    <p class="empty" role="status">{{ i18n.t('orders.loading') }}</p>
+  } @else if (data(); as pagina) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ i18n.t('orders.order') }}</th>
+            <th>{{ i18n.t('orders.customer') }}</th>
+            <th>{{ i18n.t('orders.date') }}</th>
+            <th>{{ i18n.t('orders.amount') }}</th>
+            <th>{{ i18n.t('orders.delivery') }}</th>
+            <th>{{ i18n.t('orders.payment') }}</th>
+            <th>
+              <span class="sr-only">{{ i18n.t('orders.actions') }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pedido of pagina.content; track pedido.id) {
+            <tr>
+              <td>
+                <span class="order-code">{{ pedido.numeroPedido }}</span>
+                <div class="muted">{{ label(pedido.origen) }}</div>
+              </td>
+              <td class="customer">
+                {{ pedido.nombreCliente }}<small class="muted">{{ pedido.telefonoCliente }}</small>
+              </td>
+              <td>{{ pedido.fechaRegistro | date: 'dd MMM yyyy' : undefined : i18n.locale() }}</td>
+              <td>{{ pedido.total | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</td>
+              <td>
+                <select
+                  class="status-select"
+                  [attr.aria-label]="i18n.t('orders.deliveryOf', { order: pedido.numeroPedido })"
+                  [value]="pedido.estadoEntrega"
+                  [disabled]="busyRows().has(pedido.id)"
+                  (change)="change(pedido, 'entrega', $event)"
+                >
+                  <option value="NUEVO">{{ i18n.t('orders.newStatus') }}</option>
+                  <option value="EN_CAMINO">{{ i18n.t('orders.onTheWay') }}</option>
+                  <option value="ENTREGADO">{{ i18n.t('orders.delivered') }}</option>
+                </select>
+              </td>
+              <td>
+                <select
+                  class="status-select"
+                  [attr.aria-label]="i18n.t('orders.paymentOf', { order: pedido.numeroPedido })"
+                  [value]="pedido.estadoPago"
+                  [disabled]="busyRows().has(pedido.id)"
+                  (change)="change(pedido, 'pago', $event)"
+                >
+                  <option value="PENDIENTE">{{ i18n.t('orders.pending') }}</option>
+                  <option value="PAGADO">{{ i18n.t('orders.paid') }}</option>
+                </select>
+              </td>
+              <td>
+                <button class="button secondary" type="button" (click)="details(pedido)">
+                  {{ i18n.t('orders.detail') }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty">{{ i18n.t('orders.empty') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <p class="muted result-count">
+        {{
+          i18n.t('orders.pagination', {
+            count: pagina.page.totalElements,
+            page: pagina.page.number + 1,
+            pages: pagina.page.totalPages || 1,
+          })
+        }}
+      </p>
+      <div class="actions">
+        <button
+          class="button secondary"
+          type="button"
+          [disabled]="table.page() === 0"
+          (click)="paginate(table.page() - 1)"
+        >
+          {{ i18n.t('orders.previous') }}</button><button
+          class="button secondary"
+          type="button"
+          [disabled]="table.page() + 1 >= pagina.page.totalPages"
+          (click)="paginate(table.page() + 1)"
+        >
+          {{ i18n.t('orders.next') }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty">
+      <p>{{ i18n.t('orders.loadFailed') }}</p>
+      <button class="button secondary" (click)="load()">{{ i18n.t('orders.retry') }}</button>
+    </div>
+  }
+</section>
+@if (selected(); as pedido) {
+  <section class="card detail-card" [attr.aria-label]="i18n.t('orders.detailLabel')">
+    <div class="detail-header">
+      <div>
+        <p class="eyebrow">{{ i18n.t('orders.detailEyebrow') }}</p>
+        <h2>{{ pedido.numeroPedido }}</h2>
+      </div>
+      <button class="button secondary" type="button" (click)="closeDetail()">
+        {{ i18n.t('orders.closeDetail') }}
+      </button>
+    </div>
+    <dl class="detail-grid">
+      <div>
+        <dt>{{ i18n.t('orders.customer') }}</dt>
+        <dd>{{ pedido.nombreCliente }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('orders.address') }}</dt>
+        <dd>{{ pedido.direccionEntrega }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('orders.phone') }}</dt>
+        <dd>{{ pedido.telefonoCliente }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('orders.registeredBy') }}</dt>
+        <dd>{{ pedido.usuarioRegistro || i18n.t('orders.publicCustomer') }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('orders.deliveryDate') }}</dt>
+        <dd>
+          {{
+            pedido.fechaEntrega
+              ? (pedido.fechaEntrega | date: 'dd/MM/yyyy' : undefined : i18n.locale())
+              : i18n.t('orders.pending')
+          }}
+        </dd>
+      </div>
+    </dl>
+    @if (pedido.observaciones) {
+      <p>
+        <strong>{{ i18n.t('orders.notes') }}</strong> {{ pedido.observaciones }}
+      </p>
+    }
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ i18n.t('orders.product') }}</th>
+            <th>{{ i18n.t('orders.units') }}</th>
+            <th>{{ i18n.t('orders.unitPrice') }}</th>
+            <th>{{ i18n.t('orders.subtotal') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (detalle of pedido.detalles; track $index) {
+            <tr>
+              <td>{{ detalle.nombreProducto }}</td>
+              <td>{{ detalle.cantidad }}</td>
+              <td>
+                {{ detalle.precioUnitario | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}
+              </td>
+              <td>{{ detalle.subtotal | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <h3 class="detail-section">{{ i18n.t('orders.history') }}</h3>
+    @if (historyLoading()) {
+      <p role="status">{{ i18n.t('orders.loadingHistory') }}</p>
+    } @else if (historyError()) {
+      <div class="notice error" role="alert">{{ historyError() }}</div>
+    } @else {
+      <ol class="timeline">
+        @for (evento of history(); track evento.id) {
+          <li>
+            <strong>{{ label(evento.campo) }}</strong>
+            <p>{{ label(evento.valorAnterior) }} → {{ label(evento.valorNuevo) }}</p>
+            <small
+              >{{ evento.usuario }} ·
+              {{ evento.fecha | date: 'dd/MM/yyyy HH:mm' : '-0500' : i18n.locale() }}</small
+            >
+          </li>
+        } @empty {
+          <li>{{ i18n.t('orders.emptyHistory') }}</li>
+        }
+      </ol>
+    }
+  </section>
+}

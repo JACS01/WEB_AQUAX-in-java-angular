@@ -1,0 +1,50 @@
+<header class="public-header">
+  <a class="brand" routerLink="/"
+    ><span class="brand-mark"><app-icon name="drop" /></span>Aqua<span class="brand-x">X</span></a
+  >
+  <nav>
+    <app-language-switcher />
+    <a href="#catalogo">{{ i18n.t('catalog.products') }}</a><a
+      class="button secondary"
+      routerLink="/login"
+      >{{ i18n.t('catalog.teamAccess') }} <app-icon name="arrow"
+    /></a>
+  </nav>
+</header>
+<main id="main-content" tabindex="-1" class="public-main">
+  <section class="public-hero">
+    <div>
+      <span class="eyebrow">{{ i18n.t('catalog.eyebrow') }}</span>
+      <h1>
+        {{ i18n.t('catalog.headline') }}<br /><span>{{ i18n.t('catalog.headlineSecond') }}</span>
+      </h1>
+      <p>
+        {{ i18n.t('catalog.intro') }}<br />
+        {{ i18n.t('catalog.introSecond') }}
+      </p>
+      <a class="button" href="#catalogo"
+        >{{ i18n.t('catalog.placeOrder') }} <app-icon name="arrow"
+      /></a>
+    </div>
+    <div class="hero-water">
+      <div class="water-orbit"></div>
+      <app-icon name="drop" /><span>{{ i18n.t('catalog.waterMotto') }}</span
+      ><span class="water-caption">{{ i18n.t('catalog.waterCaption') }}</span>
+    </div>
+  </section>
+  <section id="catalogo" class="catalog-section">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">{{ i18n.t('catalog.sectionEyebrow') }}</span>
+        <h2>{{ i18n.t('catalog.sectionTitle') }}</h2>
+      </div>
+      <span class="hero-delivery"><app-icon name="truck" /> {{ i18n.t('catalog.delivery') }}</span>
+    </div>
+    <app-pedido-form />
+  </section>
+</main>
+<footer class="public-footer">
+  <span class="brand">Aqua<span class="brand-x">X</span></span
+  ><span>{{ i18n.t('catalog.footer') }}</span
+  ><a routerLink="/login">{{ i18n.t('catalog.teamPortal') }}</a>
+</footer>

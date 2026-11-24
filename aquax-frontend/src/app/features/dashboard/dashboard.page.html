@@ -1,0 +1,140 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">{{ i18n.t('dashboard.eyebrow') }}</span>
+    <h1>
+      {{ i18n.t('dashboard.hello', { name: auth.user()?.nombre ?? '' })
+      }}<span class="heading-dot">.</span>
+    </h1>
+    <p class="muted">{{ i18n.t('dashboard.description') }}</p>
+  </div>
+  <a class="button" routerLink="/panel/pedidos/nuevo"
+    ><app-icon name="plus" />{{ i18n.t('dashboard.newOrder') }}</a
+  >
+</div>
+@if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }}
+    <button class="text-link" (click)="load()">{{ i18n.t('dashboard.retry') }}</button>
+  </div>
+}
+@if (loading()) {
+  <div class="card empty" role="status">{{ i18n.t('dashboard.loading') }}</div>
+} @else if (summary(); as s) {
+  <section class="stat-grid">
+    <article class="stat-card">
+      <div>
+        <span>{{ i18n.t('dashboard.operational') }}</span><app-icon name="orders" />
+      </div>
+      <strong>{{ s.totalPedidos }}</strong><small>{{
+        i18n.t('dashboard.pendingDeliveryPayment')
+      }}</small>
+    </article>
+    <article class="stat-card">
+      <div>
+        <span>{{ i18n.t('dashboard.paymentPending') }}</span><app-icon name="clock" />
+      </div>
+      <strong>{{ s.pendientes }}</strong><small>{{ i18n.t('dashboard.toCollect') }}</small>
+    </article>
+    <article class="stat-card">
+      <div>
+        <span>{{ i18n.t('dashboard.paidToDeliver') }}</span><app-icon name="truck" />
+      </div>
+      <strong>{{ s.pagados }}</strong><small>{{ i18n.t('dashboard.readyToGo') }}</small>
+    </article>
+    <article class="stat-card accent-stat">
+      <div>
+        <span>{{ i18n.t('dashboard.catalog') }}</span><app-icon name="drop" />
+      </div>
+      <strong>{{ s.deClientes }}</strong><small>{{ i18n.t('dashboard.customerOrders') }}</small>
+    </article>
+  </section>
+  <section class="dashboard-middle">
+    <div class="flow-card">
+      <div>
+        <span class="eyebrow light">{{ i18n.t('dashboard.eachOrder') }}</span>
+        <h2>{{ i18n.t('dashboard.goodDay') }}</h2>
+        <p>{{ i18n.t('dashboard.flowDescription') }}</p>
+        <a routerLink="/panel/pedidos"
+          >{{ i18n.t('dashboard.manageOrders') }}<app-icon name="arrow"
+        /></a>
+      </div>
+      <div class="flow-water"><app-icon name="drop" /></div>
+    </div>
+    <div class="card balance-card">
+      <span class="eyebrow">{{ i18n.t('dashboard.collectionStatus') }}</span>
+      <h3>{{ i18n.t('dashboard.perspective') }}</h3>
+      <div class="balance-bar">
+        <span [style.width.%]="s.totalPedidos ? (s.pendientes / s.totalPedidos) * 100 : 0"></span>
+      </div>
+      <div class="balance-row">
+        <span><i class="legend-dot teal"></i>{{ i18n.t('dashboard.paymentPending') }}</span
+        ><strong>{{ s.pendientes }}</strong>
+      </div>
+      <div class="balance-row">
+        <span><i class="legend-dot pale"></i>{{ i18n.t('dashboard.paidToDeliver') }}</span
+        ><strong>{{ s.pagados }}</strong>
+      </div>
+      <p class="muted small">{{ i18n.t('dashboard.completedNote') }}</p>
+    </div>
+  </section>
+  <section class="card recent-orders">
+    <div class="card-heading">
+      <div>
+        <span class="eyebrow">{{ i18n.t('dashboard.alwaysHandy') }}</span>
+        <h2>{{ i18n.t('dashboard.recent') }}</h2>
+      </div>
+      <a class="text-link" routerLink="/panel/pedidos">{{ i18n.t('dashboard.viewAll') }}</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ i18n.t('dashboard.order') }}</th>
+            <th>{{ i18n.t('dashboard.customer') }}</th>
+            <th>{{ i18n.t('dashboard.date') }}</th>
+            <th>{{ i18n.t('dashboard.delivery') }}</th>
+            <th>{{ i18n.t('dashboard.payment') }}</th>
+            <th class="text-right">{{ i18n.t('dashboard.total') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of orders(); track p.id) {
+            <tr>
+              <td>
+                <a
+                  class="order-code"
+                  [routerLink]="['/panel/pedidos']"
+                  [queryParams]="{ pedido: p.id }"
+                  >{{ p.numeroPedido }}</a
+                >
+              </td>
+              <td>
+                <strong>{{ p.nombreCliente }}</strong><small class="cell-subtitle">{{
+                  p.telefonoCliente
+                }}</small>
+              </td>
+              <td>{{ p.fechaRegistro | date: 'dd MMM yyyy' : undefined : i18n.locale() }}</td>
+              <td>
+                <span class="badge" [class.success]="p.estadoEntrega === 'ENTREGADO'">{{
+                  i18n.label(p.estadoEntrega)
+                }}</span>
+              </td>
+              <td>
+                <span class="badge" [class.success]="p.estadoPago === 'PAGADO'">{{
+                  i18n.label(p.estadoPago)
+                }}</span>
+              </td>
+              <td class="text-right">
+                {{ p.total | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty">{{ i18n.t('dashboard.empty') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

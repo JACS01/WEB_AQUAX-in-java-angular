@@ -1,0 +1,55 @@
+<main id="main-content" tabindex="-1" class="login-layout">
+  <section class="login-story">
+    <a class="brand" routerLink="/"
+      ><span class="brand-mark"><app-icon name="drop" /></span>Aqua<span class="brand-x">X</span></a
+    >
+    <div>
+      <span class="eyebrow light">{{ i18n.t('login.eyebrow') }}</span>
+      <h1>{{ i18n.t('login.headline') }}<br />{{ i18n.t('login.headlineSecond') }}</h1>
+      <p>{{ i18n.t('login.intro') }}<br />{{ i18n.t('login.introSecond') }}</p>
+    </div>
+    <span class="story-footer">{{ i18n.t('login.footer') }}</span>
+    <div class="water-ring ring-one"></div>
+    <div class="water-ring ring-two"></div>
+  </section>
+  <section class="login-form">
+    <div class="login-box">
+      <app-language-switcher />
+      <span class="eyebrow">{{ i18n.t('login.teamSpace') }}</span>
+      <h2>{{ i18n.t('login.welcome') }}</h2>
+      <p class="muted">{{ i18n.t('login.description') }}</p>
+      @if (sessionExpired) {
+        <div class="notice">{{ i18n.t('login.expired') }}</div>
+      }
+      @if (error()) {
+        <div class="notice error" role="alert">{{ error() }}</div>
+      }
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <label class="field"
+          >{{ i18n.t('login.username')
+          }}<input
+            formControlName="nombreUsuario"
+            maxlength="50"
+            autocomplete="username"
+            [placeholder]="i18n.t('login.usernamePlaceholder')" /><app-field-error
+            [control]="form.controls.nombreUsuario"
+        /></label>
+        <label class="field"
+          >{{ i18n.t('login.password')
+          }}<input
+            formControlName="contrasena"
+            type="password"
+            maxlength="72"
+            autocomplete="current-password"
+            [placeholder]="i18n.t('login.passwordPlaceholder')" /><app-field-error
+            [control]="form.controls.contrasena"
+        /></label>
+        <button class="button full" [disabled]="busy()">
+          {{ i18n.t(busy() ? 'login.signingIn' : 'login.signIn') }} <app-icon name="arrow" />
+        </button>
+      </form>
+      <p class="login-help">{{ i18n.t('login.help') }}</p>
+      <a class="text-link" routerLink="/">{{ i18n.t('login.back') }} <span>↗</span></a>
+    </div>
+  </section>
+</main>

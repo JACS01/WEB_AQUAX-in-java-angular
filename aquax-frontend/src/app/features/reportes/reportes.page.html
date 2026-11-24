@@ -1,0 +1,190 @@
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">{{ i18n.t('reports.eyebrow') }}</p>
+    <h1>{{ i18n.t('reports.title') }}</h1>
+    <p class="muted">{{ i18n.t('reports.description') }}</p>
+  </div>
+</div>
+<div class="tabs" [attr.aria-label]="i18n.t('reports.type')">
+  <button type="button" [class.active]="tab() === 'completados'" (click)="switchTab('completados')">
+    {{ i18n.t('reports.completed') }}</button><button
+    type="button"
+    [class.active]="tab() === 'pagados'"
+    (click)="switchTab('pagados')"
+  >
+    {{ i18n.t('reports.paidHistory') }}
+  </button>
+</div>
+@if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }}
+    <button class="button secondary" type="button" (click)="load()">
+      {{ i18n.t('reports.retry') }}
+    </button>
+  </div>
+}
+@if (success()) {
+  <div class="notice success" role="status">{{ success() }}</div>
+}
+@if (tab() === 'completados') {
+  <section class="card">
+    <form class="filters" [formGroup]="form" (ngSubmit)="apply()">
+      <label class="field"
+        >{{ i18n.t('reports.from') }}<input type="date" formControlName="desde" /></label
+      ><label class="field"
+        >{{ i18n.t('reports.until') }}<input type="date" formControlName="hasta"
+      /></label>
+      <div class="actions">
+        <button class="button" type="submit" [disabled]="loading() || downloading()">
+          {{ i18n.t('reports.apply') }}</button><button
+          class="button secondary"
+          type="button"
+          [disabled]="loading() || downloading()"
+          (click)="clear()"
+        >
+          {{ i18n.t('reports.clear') }}
+        </button>
+      </div>
+    </form>
+    @if (dateError()) {
+      <p class="notice error" role="alert">{{ dateError() }}</p>
+    }
+    <p class="muted section-note">{{ i18n.t('reports.filterNote') }}</p>
+  </section>
+  @if (loading()) {
+    <section class="card empty" role="status">{{ i18n.t('reports.loading') }}</section>
+  }
+  @if (report(); as reporte) {
+    <div class="report-intro">
+      <div>
+        <h2>{{ i18n.t('reports.completedCount', { count: reporte.totalPedidos }) }}</h2>
+        <p class="muted">
+          {{
+            reporte.desde
+              ? (reporte.desde | date: 'dd/MM/yyyy' : undefined : i18n.locale())
+              : i18n.t('reports.beginning')
+          }}
+          —
+          {{
+            reporte.hasta
+              ? (reporte.hasta | date: 'dd/MM/yyyy' : undefined : i18n.locale())
+              : i18n.t('reports.toDate')
+          }}
+        </p>
+      </div>
+      <button
+        class="button secondary"
+        type="button"
+        (click)="download()"
+        [disabled]="downloading() || loading()"
+      >
+        {{ downloading() ? i18n.t('reports.downloading') : i18n.t('reports.download') }}
+      </button>
+    </div>
+    <section class="card">
+      <h3>{{ i18n.t('reports.unitsByProduct') }}</h3>
+      <div class="product-summary">
+        @for (producto of reporte.productos; track producto.productoId) {
+          <article>
+            <span class="muted">{{ producto.nombreProducto }}</span><strong>{{
+              producto.cantidad | number: '1.0-0' : i18n.locale()
+            }}</strong
+            ><small class="muted">{{ i18n.t('reports.deliveredUnits') }}</small>
+          </article>
+        } @empty {
+          <p class="empty">{{ i18n.t('reports.emptyCatalog') }}</p>
+        }
+      </div>
+    </section>
+    <section class="card report-orders">
+      <h3>{{ i18n.t('reports.deliveredPaid') }}</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ i18n.t('reports.order') }}</th>
+              <th>{{ i18n.t('reports.customer') }}</th>
+              <th>{{ i18n.t('reports.delivery') }}</th>
+              <th>{{ i18n.t('reports.units') }}</th>
+              <th>{{ i18n.t('reports.total') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pedido of reporte.pedidos; track pedido.id) {
+              <tr>
+                <td>{{ pedido.numeroPedido }}</td>
+                <td>{{ pedido.nombreCliente }}</td>
+                <td>{{ pedido.fechaEntrega | date: 'dd/MM/yyyy' : undefined : i18n.locale() }}</td>
+                <td>{{ pedido.cantidadProducto }}</td>
+                <td>{{ pedido.total | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty">{{ i18n.t('reports.emptyCompleted') }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+} @else {
+  @if (loading()) {
+    <section class="card empty" role="status">{{ i18n.t('reports.loadingPayments') }}</section>
+  }
+  @if (paid(); as pagados) {
+    <div class="stat-grid">
+      <article class="stat-card">
+        <span class="muted">{{ i18n.t('reports.paidOrders') }}</span>
+        <p class="amount">{{ pagados.totalPagados | number: '1.0-0' : i18n.locale() }}</p>
+      </article>
+      <article class="stat-card">
+        <span class="muted">{{ i18n.t('reports.recordedAmount') }}</span>
+        <p class="amount">
+          {{ pagados.montoTotal | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}
+        </p>
+      </article>
+    </div>
+    <section class="card">
+      <div class="report-intro">
+        <div>
+          <h2>{{ i18n.t('reports.allPaid') }}</h2>
+          <p class="muted">{{ i18n.t('reports.includesPending') }}</p>
+        </div>
+        <button class="button secondary" (click)="load()" [disabled]="loading()">
+          {{ i18n.t('reports.refresh') }}
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ i18n.t('reports.order') }}</th>
+              <th>{{ i18n.t('reports.customer') }}</th>
+              <th>{{ i18n.t('reports.registration') }}</th>
+              <th>{{ i18n.t('reports.delivery') }}</th>
+              <th>{{ i18n.t('reports.amount') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pedido of pagados.pedidos; track pedido.id) {
+              <tr>
+                <td>{{ pedido.numeroPedido }}</td>
+                <td>{{ pedido.nombreCliente }}</td>
+                <td>{{ pedido.fechaRegistro | date: 'dd/MM/yyyy' : undefined : i18n.locale() }}</td>
+                <td>
+                  <span class="badge">{{ i18n.label(pedido.estadoEntrega) }}</span>
+                </td>
+                <td>{{ pedido.total | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty">{{ i18n.t('reports.emptyPaid') }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+}

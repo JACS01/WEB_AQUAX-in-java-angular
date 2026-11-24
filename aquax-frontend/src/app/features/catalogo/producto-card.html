@@ -1,0 +1,51 @@
+<article class="product-card" [class.selected]="cantidad() > 0">
+  <div class="product-art">
+    @if (image(); as src) {
+      <img
+        class="product-photo"
+        [src]="src"
+        [alt]="producto().nombre"
+        loading="lazy"
+        decoding="async"
+      />
+    } @else {
+      <svg class="product-placeholder" viewBox="0 0 48 64" aria-hidden="true">
+        <path d="M24 4C20 15 7 27 7 40a17 17 0 0 0 34 0C41 27 28 15 24 4Z" fill="currentColor" />
+      </svg>
+    }
+  </div>
+  <div class="product-info">
+    <h3>{{ producto().nombre }}</h3>
+    <p class="muted">{{ producto().descripcion }}</p>
+    <div class="product-bottom">
+      <strong>{{
+        producto().precio | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale()
+      }}</strong>
+      <div class="quantity">
+        <button
+          type="button"
+          [attr.aria-label]="i18n.t('catalog.removeUnit', { name: producto().nombre })"
+          [disabled]="cantidad() === 0"
+          (click)="emitCantidad(cantidad() - 1)"
+        >
+          −</button
+        ><input
+          type="number"
+          min="0"
+          max="9999"
+          step="1"
+          [attr.aria-label]="i18n.t('catalog.quantity', { name: producto().nombre })"
+          [value]="cantidad()"
+          (change)="changeQuantity($event)"
+        /><button
+          type="button"
+          [disabled]="cantidad() >= 9999"
+          [attr.aria-label]="i18n.t('catalog.addUnit', { name: producto().nombre })"
+          (click)="emitCantidad(cantidad() + 1)"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+</article>

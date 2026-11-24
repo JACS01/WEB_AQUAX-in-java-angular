@@ -1,0 +1,94 @@
+<div class="workspace">
+  <aside class="sidebar" [class.open]="menuOpen()">
+    <a class="brand" routerLink="/panel"
+      ><span class="brand-mark"><app-icon name="drop" /></span>Aqua<span class="brand-x">X</span></a
+    >
+    <div class="workspace-name">
+      <span class="workspace-dot"></span>{{ i18n.t('layout.workspace')
+      }}<span class="small">{{ i18n.t('layout.country') }}</span>
+    </div>
+    <span class="nav-label">{{ i18n.t('layout.yourSpace') }}</span>
+    <nav (click)="menuOpen.set(false)">
+      <a routerLink="/panel" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        ><app-icon name="grid" />{{ i18n.t('layout.summary') }}</a
+      ><a routerLink="/panel/pedidos" routerLinkActive="active"
+        ><app-icon name="orders" />{{ i18n.t('layout.orders') }}</a
+      ><a routerLink="/panel/reportes" routerLinkActive="active"
+        ><app-icon name="chart" />{{ i18n.t('layout.reports') }}</a
+      ><a routerLink="/panel/notificaciones" routerLinkActive="active"
+        ><app-icon name="bell" />{{ i18n.t('layout.notifications') }}</a
+      >
+      @if (auth.isAdmin()) {
+        <span class="nav-label">{{ i18n.t('layout.administration') }}</span><a
+          routerLink="/panel/usuarios"
+          routerLinkActive="active"
+          ><app-icon name="users" />{{ i18n.t('layout.users') }}</a
+        ><a routerLink="/panel/empleados" routerLinkActive="active"
+          ><app-icon name="user" />{{ i18n.t('layout.employees') }}</a
+        ><a routerLink="/panel/empresa" routerLinkActive="active"
+          ><app-icon name="building" />{{ i18n.t('layout.company') }}</a
+        >
+      }
+      <span class="nav-label">{{ i18n.t('layout.myAccount') }}</span><a
+        routerLink="/panel/perfil"
+        routerLinkActive="active"
+        ><app-icon name="user" />{{ i18n.t('layout.profile') }}</a
+      ><a routerLink="/panel/preferencias" routerLinkActive="active"
+        ><app-icon name="settings" />{{ i18n.t('layout.preferences') }}</a
+      >
+    </nav>
+    <div class="sidebar-bottom">
+      <a class="public-link" routerLink="/">{{ i18n.t('layout.publicCatalog') }}</a>
+      <div class="account">
+        <div class="avatar">{{ initials() }}</div>
+        <div>
+          <strong>{{ auth.user()?.nombre }}</strong><small>{{
+            i18n.t(auth.isAdmin() ? 'layout.admin' : 'layout.seller')
+          }}</small>
+        </div>
+        <button
+          class="icon-button"
+          [title]="i18n.t('layout.logout')"
+          [attr.aria-label]="i18n.t('layout.logout')"
+          (click)="logout()"
+        >
+          <app-icon name="logout" />
+        </button>
+      </div>
+    </div>
+  </aside>
+  @if (menuOpen()) {
+    <button
+      class="nav-backdrop"
+      [attr.aria-label]="i18n.t('layout.closeMenu')"
+      (click)="menuOpen.set(false)"
+    ></button>
+  }
+  <div class="workspace-content">
+    <header class="topbar">
+      <button
+        class="icon-button mobile-menu"
+        [attr.aria-label]="i18n.t('layout.openMenu')"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="menuOpen.set(!menuOpen())"
+      >
+        <app-icon name="menu" /></button
+      ><span class="topbar-path">AquaX <span>/</span> {{ i18n.t('layout.operations') }}</span>
+      <div class="topbar-end">
+        <span class="local-date">{{ today() }}</span><a
+          class="icon-button"
+          routerLink="/panel/notificaciones"
+          [attr.aria-label]="i18n.t('layout.viewNotifications')"
+          ><app-icon name="bell"
+        /></a>
+        <div class="avatar small-avatar">{{ initials() }}</div>
+      </div>
+    </header>
+    <main id="main-content" class="panel-main" [attr.lang]="i18n.language()">
+      <router-outlet />
+    </main>
+    <footer class="panel-footer">
+      <span>{{ i18n.t('layout.footer') }}</span><span>{{ i18n.t('layout.teamManagement') }}</span>
+    </footer>
+  </div>
+</div>

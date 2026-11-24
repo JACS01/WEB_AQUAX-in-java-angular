@@ -1,0 +1,398 @@
+<header class="page-heading">
+  <div>
+    <p class="eyebrow">{{ i18n.t('admin.administration') }}</p>
+    <h1>{{ i18n.t('admin.employees') }}</h1>
+    <p class="muted">{{ i18n.t('admin.employeesDescription') }}</p>
+  </div>
+  <div class="actions">
+    <button class="button secondary" type="button" [disabled]="saving()" (click)="open('link')">
+      {{ i18n.t('admin.linkAccount') }}</button><button
+      class="button"
+      type="button"
+      [disabled]="saving()"
+      (click)="open('create')"
+    >
+      {{ i18n.t('admin.newEmployee') }}
+    </button>
+  </div>
+</header>
+@if (success()) {
+  <div class="notice success" role="status">{{ success() }}</div>
+}
+@if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }}
+    <button class="button secondary" type="button" (click)="load()">
+      {{ i18n.t('admin.retry') }}
+    </button>
+  </div>
+}
+@if (mode() !== 'closed') {
+  <section class="card" aria-labelledby="empleado-editor">
+    <div class="page-heading">
+      <h2 id="empleado-editor">
+        {{
+          mode() === 'link'
+            ? i18n.t('admin.linkExistingAccount')
+            : mode() === 'create'
+              ? i18n.t('admin.createEmployeeAccount')
+              : i18n.t('admin.editEmployee')
+        }}
+      </h2>
+      <button
+        class="button secondary"
+        type="button"
+        [disabled]="saving()"
+        (click)="mode.set('closed')"
+      >
+        {{ i18n.t('admin.close') }}
+      </button>
+    </div>
+    @if (formError()) {
+      <div class="notice error" role="alert">{{ formError() }}</div>
+    }
+    @if (mode() === 'link') {
+      <p class="muted">{{ i18n.t('admin.linkDescription') }}</p>
+      <form [formGroup]="linkForm" (ngSubmit)="link()">
+        <div class="form-grid">
+          <label class="field"
+            >{{ i18n.t('admin.account')
+            }}<select formControlName="usuarioId">
+              <option [ngValue]="0">
+                {{
+                  accountsLoading()
+                    ? i18n.t('admin.loadingAccounts')
+                    : i18n.t('admin.selectAccount')
+                }}
+              </option>
+              @for (cuenta of cuentas(); track cuenta.id) {
+                <option [ngValue]="cuenta.id">
+                  {{ cuenta.nombre }} {{ cuenta.apellido }} ({{ cuenta.nombreUsuario }})
+                </option>
+              }</select
+            ><app-admin-field-error [control]="linkForm.controls.usuarioId"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.dni')
+            }}<input
+              formControlName="dni"
+              inputmode="numeric"
+              maxlength="8"
+              [placeholder]="i18n.t('admin.eightDigits')" /><app-admin-field-error
+              [control]="linkForm.controls.dni"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.optionalStartDate')
+            }}<input formControlName="fechaIngreso" type="date" /><app-admin-field-error
+              [control]="linkForm.controls.fechaIngreso"
+          /></label>
+        </div>
+        <button class="button" [disabled]="saving() || accountsLoading() || !accountsLoaded()">
+          {{ saving() ? i18n.t('admin.linking') : i18n.t('admin.createRecord') }}
+        </button>
+      </form>
+    }
+    @if (mode() === 'create') {
+      <form [formGroup]="createForm" (ngSubmit)="create()">
+        <div class="form-grid">
+          <label class="field"
+            >{{ i18n.t('admin.username')
+            }}<input
+              formControlName="nombreUsuario"
+              autocomplete="off"
+              [placeholder]="i18n.t('admin.usernamePlaceholder')" /><app-admin-field-error
+              [control]="createForm.controls.nombreUsuario"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.role')
+            }}<select formControlName="rol">
+              <option value="VENDEDOR">{{ i18n.t('admin.seller') }}</option>
+              <option value="ADMINISTRADOR">{{ i18n.t('admin.administrator') }}</option></select
+            ><app-admin-field-error [control]="createForm.controls.rol"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.name')
+            }}<input formControlName="nombre" autocomplete="given-name" /><app-admin-field-error
+              [control]="createForm.controls.nombre"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.surname')
+            }}<input formControlName="apellido" autocomplete="family-name" /><app-admin-field-error
+              [control]="createForm.controls.apellido"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.email')
+            }}<input
+              formControlName="correo"
+              type="email"
+              autocomplete="email" /><app-admin-field-error [control]="createForm.controls.correo"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.phone')
+            }}<input
+              formControlName="telefono"
+              type="tel"
+              autocomplete="tel" /><app-admin-field-error [control]="createForm.controls.telefono"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.initialPassword')
+            }}<input
+              formControlName="contrasena"
+              type="password"
+              autocomplete="new-password" /><small>{{ i18n.t('admin.employeePasswordHint') }}</small
+            ><app-admin-field-error [control]="createForm.controls.contrasena"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.dni')
+            }}<input
+              formControlName="dni"
+              inputmode="numeric"
+              maxlength="8"
+              [placeholder]="i18n.t('admin.eightDigits')" /><app-admin-field-error
+              [control]="createForm.controls.dni"
+          /></label>
+          <label class="field"
+            >{{ i18n.t('admin.optionalStartDate')
+            }}<input formControlName="fechaIngreso" type="date" /><app-admin-field-error
+              [control]="createForm.controls.fechaIngreso"
+          /></label>
+        </div>
+        <button class="button" [disabled]="saving()">
+          {{ saving() ? i18n.t('admin.creating') : i18n.t('admin.createEmployeeAccount') }}
+        </button>
+      </form>
+    }
+    @if (mode() === 'edit' && selected(); as empleado) {
+      <p class="muted">
+        {{ empleado.nombreUsuario }} ·
+        {{ empleado.activo ? i18n.t('admin.activeAccount') : i18n.t('admin.inactiveAccount') }}
+      </p>
+      <div class="split">
+        <form [formGroup]="laborForm" (ngSubmit)="saveLabor()">
+          <h3>{{ i18n.t('admin.employmentData') }}</h3>
+          <div class="form-grid">
+            <label class="field"
+              >{{ i18n.t('admin.dni')
+              }}<input
+                formControlName="dni"
+                inputmode="numeric"
+                maxlength="8" /><app-admin-field-error [control]="laborForm.controls.dni"
+            /></label>
+            <label class="field"
+              >{{ i18n.t('admin.startDate')
+              }}<input formControlName="fechaIngreso" type="date" /><app-admin-field-error
+                [control]="laborForm.controls.fechaIngreso"
+            /></label>
+          </div>
+          <button class="button secondary" [disabled]="saving()">
+            {{ i18n.t('admin.saveEmployment') }}
+          </button>
+        </form>
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <h3>{{ i18n.t('admin.personalData') }}</h3>
+          <div class="form-grid">
+            <label class="field"
+              >{{ i18n.t('admin.name') }}<input formControlName="nombre" /><app-admin-field-error
+                [control]="profileForm.controls.nombre"
+            /></label>
+            <label class="field"
+              >{{ i18n.t('admin.surname')
+              }}<input formControlName="apellido" /><app-admin-field-error
+                [control]="profileForm.controls.apellido"
+            /></label>
+            <label class="field"
+              >{{ i18n.t('admin.email')
+              }}<input formControlName="correo" type="email" /><app-admin-field-error
+                [control]="profileForm.controls.correo"
+            /></label>
+            <label class="field"
+              >{{ i18n.t('admin.phone')
+              }}<input formControlName="telefono" type="tel" /><app-admin-field-error
+                [control]="profileForm.controls.telefono"
+            /></label>
+          </div>
+          <button class="button secondary" [disabled]="saving()">
+            {{ i18n.t('admin.saveProfile') }}
+          </button>
+        </form>
+      </div>
+      <hr />
+      <div class="toolbar">
+        <label class="field"
+          >{{ i18n.t('admin.accountRole')
+          }}<select [formControl]="role">
+            <option value="VENDEDOR">{{ i18n.t('admin.seller') }}</option>
+            <option value="ADMINISTRADOR">{{ i18n.t('admin.administrator') }}</option></select
+          ><app-admin-field-error [control]="role" /></label
+        ><button
+          class="button secondary"
+          type="button"
+          [disabled]="saving() || role.value === empleado.rol"
+          (click)="saveRole()"
+        >
+          {{ i18n.t('admin.saveRole') }}</button
+        ><button
+          class="button secondary"
+          type="button"
+          [disabled]="saving()"
+          (click)="toggle(empleado)"
+        >
+          {{ empleado.activo ? i18n.t('admin.deactivateAccess') : i18n.t('admin.activateAccess') }}
+        </button>
+      </div>
+    }
+  </section>
+}
+@if (deleting(); as empleado) {
+  <section
+    class="notice"
+    role="alertdialog"
+    aria-labelledby="eliminar-titulo"
+    aria-describedby="eliminar-detalle"
+  >
+    <h2 id="eliminar-titulo">
+      {{ i18n.t('admin.deleteRecordTitle', { name: empleado.nombre, surname: empleado.apellido }) }}
+    </h2>
+    <p id="eliminar-detalle">
+      {{ i18n.t('admin.deleteRecordDescription', { username: empleado.nombreUsuario }) }}
+    </p>
+    <div class="actions">
+      <button class="button danger" type="button" [disabled]="saving()" (click)="remove()">
+        {{ saving() ? i18n.t('admin.deleting') : i18n.t('admin.confirmDeletion') }}</button><button
+        class="button secondary"
+        type="button"
+        [disabled]="saving()"
+        (click)="deleting.set(null)"
+      >
+        {{ i18n.t('admin.cancel') }}
+      </button>
+    </div>
+  </section>
+}
+<section class="card">
+  <form class="toolbar" (submit)="$event.preventDefault(); table.searchNow()">
+    <label class="field"
+      >{{ i18n.t('admin.searchEmployee')
+      }}<input
+        [formControl]="search"
+        type="search"
+        [placeholder]="i18n.t('admin.employeeSearchPlaceholder')" /></label
+    ><label class="field"
+      >{{ i18n.t('admin.perPage')
+      }}<select [value]="table.size()" (change)="changeSize($event)">
+        @if (![10, 25, 50].includes(table.size())) {
+          <option [value]="table.size()">{{ table.size() }}</option>
+        }
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select></label
+    ><label class="field"
+      >{{ i18n.t('admin.sortBy')
+      }}<select [value]="table.sort()" (change)="changeSort($event)">
+        @for (option of sortOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select></label
+    ><button class="button secondary" type="submit">{{ i18n.t('admin.search') }}</button>
+  </form>
+  @if (loading()) {
+    <div class="empty" role="status">{{ i18n.t('admin.loadingEmployees') }}</div>
+  } @else if (pagina(); as data) {
+    @if (data.content.length) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ i18n.t('admin.employee') }}</th>
+              <th>{{ i18n.t('admin.dniStart') }}</th>
+              <th>{{ i18n.t('admin.role') }}</th>
+              <th>{{ i18n.t('admin.status') }}</th>
+              <th>{{ i18n.t('admin.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (empleado of data.content; track empleado.id) {
+              <tr>
+                <td>
+                  <strong>{{ empleado.nombre }} {{ empleado.apellido }}</strong
+                  ><br /><small class="muted"
+                    >{{ empleado.nombreUsuario }} · {{ empleado.correo }}</small
+                  >
+                </td>
+                <td>
+                  {{ empleado.dni }}<br /><small class="muted">{{
+                    empleado.fechaIngreso | date: 'mediumDate' : undefined : i18n.locale()
+                  }}</small>
+                </td>
+                <td>
+                  {{
+                    empleado.rol === 'ADMINISTRADOR'
+                      ? i18n.t('admin.administrator')
+                      : i18n.t('admin.seller')
+                  }}
+                </td>
+                <td>
+                  <span class="badge">{{
+                    empleado.activo ? i18n.t('admin.active') : i18n.t('admin.inactive')
+                  }}</span>
+                </td>
+                <td>
+                  <div class="actions">
+                    <button
+                      class="button secondary"
+                      type="button"
+                      [disabled]="saving()"
+                      (click)="edit(empleado)"
+                      [attr.aria-label]="
+                        i18n.t('admin.editEmployeeAria', { name: empleado.nombre })
+                      "
+                    >
+                      {{ i18n.t('admin.edit') }}</button><button
+                      class="button danger"
+                      type="button"
+                      [disabled]="saving()"
+                      (click)="deleting.set(empleado)"
+                      [attr.aria-label]="
+                        i18n.t('admin.deleteEmployeeAria', { name: empleado.nombre })
+                      "
+                    >
+                      {{ i18n.t('admin.delete') }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty">{{ i18n.t('admin.noEmployees') }}</div>
+    }
+    <nav class="pagination" [attr.aria-label]="i18n.t('admin.employeePages')">
+      <span>{{
+        i18n.t('admin.employeePageSummary', {
+          count: data.page.totalElements,
+          page: data.page.number + 1,
+          pages: data.page.totalPages || 1,
+        })
+      }}</span>
+      <div class="actions">
+        <button
+          class="button secondary"
+          type="button"
+          [disabled]="data.page.number === 0"
+          (click)="table.goTo(data.page.number - 1)"
+        >
+          {{ i18n.t('admin.previous') }}</button><button
+          class="button secondary"
+          type="button"
+          [disabled]="data.page.number + 1 >= data.page.totalPages"
+          (click)="table.goTo(data.page.number + 1)"
+        >
+          {{ i18n.t('admin.next') }}
+        </button>
+      </div>
+    </nav>
+  }
+</section>
