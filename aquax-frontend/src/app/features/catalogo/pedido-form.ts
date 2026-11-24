@@ -10,7 +10,7 @@ import { ProductoCard } from './producto-card';
 import { Pedido, Producto } from '../../core/models';
 import { FieldError } from '../../shared/field-error';
 import { Icon } from '../../shared/icon';
-import { notBlank } from '../../shared/validators';
+import { notBlank, phoneFormat } from '../../shared/validators';
 
 type OrderFormError =
   | { kind: 'http'; value: unknown }
@@ -56,7 +56,7 @@ export class PedidoForm implements OnInit {
   readonly units = computed(() => Object.values(this.quantities()).reduce((a, b) => a + b, 0));
   readonly form = inject(FormBuilder).nonNullable.group({
     nombreCliente: ['', [notBlank, Validators.maxLength(150)]],
-    telefonoCliente: ['', [notBlank, Validators.maxLength(15)]],
+    telefonoCliente: ['', [notBlank, Validators.maxLength(15), phoneFormat]],
     direccionEntrega: ['', [notBlank, Validators.maxLength(300)]],
     observaciones: ['', Validators.maxLength(500)],
   });

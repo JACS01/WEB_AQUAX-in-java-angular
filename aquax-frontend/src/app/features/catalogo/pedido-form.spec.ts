@@ -88,6 +88,23 @@ describe('PedidoForm', () => {
     http.expectNone(`${base}/pedidos`);
   });
 
+  it('blocks phone numbers with letters and accepts a formatted number', () => {
+    component.form.setValue({ ...customer, telefonoCliente: '12345678ñ' });
+    component.setQuantity(1, 1);
+    component.submit();
+    fixture.detectChanges();
+    http.expectNone(`${base}/pedidos`);
+    expect(fixture.nativeElement.querySelector('.field-error')?.textContent).toContain(
+      'Ingresa un teléfono con dígitos',
+    );
+
+    component.form.controls.telefonoCliente.setValue('+51 999-888-777');
+    component.submit();
+    const request = http.expectOne(`${base}/pedidos`);
+    expect(request.request.body.telefonoCliente).toBe('+51 999-888-777');
+    request.flush({ id: 1 });
+  });
+
   it('uses the protected personal endpoint when embedded in the staff panel', () => {
     fixture.componentRef.setInput('personal', true);
     component.form.setValue(customer);

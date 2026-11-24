@@ -3,6 +3,15 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 export const notBlank: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
   typeof control.value !== 'string' || !control.value.trim() ? { required: true } : null;
 
+export const phoneFormat: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const value: unknown = control.value;
+  return typeof value === 'string' &&
+    value.length > 0 &&
+    !/^[+]?(?=[0-9() -]*[0-9])[0-9() -]+$/.test(value)
+    ? { phoneFormat: true }
+    : null;
+};
+
 export function maxUtf8Bytes(maximum: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null =>
     typeof control.value === 'string' && new TextEncoder().encode(control.value).length > maximum

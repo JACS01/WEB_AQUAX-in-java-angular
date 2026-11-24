@@ -16,6 +16,7 @@ export class FieldError {
     if (c?.hasError('email')) return this.i18n.t('validation.email');
     if (c?.hasError('minlength')) return this.i18n.t('validation.short');
     if (c?.hasError('maxlength')) return this.i18n.t('validation.long');
+    if (c?.hasError('phoneFormat')) return this.i18n.t('validation.phoneFormat');
     if (c?.hasError('maxUtf8Bytes')) return this.i18n.t('validation.utf8');
     if (c?.hasError('isoDate')) return this.i18n.t('validation.date');
     if (c?.hasError('oneOf')) return this.i18n.t('validation.option');

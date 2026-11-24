@@ -134,7 +134,7 @@
     <div class="pagination">
       <p class="muted result-count">
         {{
-          i18n.t('orders.pagination', {
+          i18n.t(pagina.page.totalElements === 1 ? 'orders.paginationOne' : 'orders.pagination', {
             count: pagina.page.totalElements,
             page: pagina.page.number + 1,
             pages: pagina.page.totalPages || 1,

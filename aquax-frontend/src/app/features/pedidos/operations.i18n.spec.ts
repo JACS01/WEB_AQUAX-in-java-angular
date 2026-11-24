@@ -121,6 +121,22 @@ describe('Operaciones: traducciones y conservación de datos', () => {
     );
   });
 
+  it('usa singular para un pedido y plural para varios', () => {
+    const fixture = TestBed.createComponent(PedidosPage);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.result-count').textContent).toContain(
+      '1 pedido ·',
+    );
+
+    const orders = fixture.componentInstance;
+    const response = orders.data()!;
+    orders.data.set({ ...response, page: { ...response.page, totalElements: 2 } });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.result-count').textContent).toContain(
+      '2 pedidos ·',
+    );
+  });
+
   it('conserva mensajes desconocidos y no intenta traducir contenido libre', () => {
     const page = TestBed.createComponent(NotificacionesPage).componentInstance;
     TestBed.inject(TranslationService).use('en');

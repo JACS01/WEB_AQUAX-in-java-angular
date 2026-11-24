@@ -47,6 +47,26 @@ class AquaxAuditoriaEntradaTest {
     }
 
     @Test
+    void pedidoPublicoYDePersonalValidanElTelefono() throws Exception {
+        String solicitud = """
+                {"nombreCliente":"Prueba de teléfono","telefonoCliente":"%s","direccionEntrega":"Prueba",
+                 "detalles":[{"productoId":1,"cantidad":1}]}
+                """;
+        String telefonoConLetra = solicitud.formatted("12345678ñ");
+        mvc.perform(post("/api/pedidos").contentType(MediaType.APPLICATION_JSON).content(telefonoConLetra))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores[0].campo").value("telefonoCliente"));
+        mvc.perform(post("/api/personal/pedidos").header(HttpHeaders.AUTHORIZATION, ADMIN)
+                .contentType(MediaType.APPLICATION_JSON).content(telefonoConLetra))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores[0].campo").value("telefonoCliente"));
+        mvc.perform(post("/api/pedidos").contentType(MediaType.APPLICATION_JSON)
+                .content(solicitud.formatted("+51 999-888-777")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.telefonoCliente").value("+51 999-888-777"));
+    }
+
+    @Test
     void zoomFraccionarioSeRechaza() throws Exception {
         var resultado = mvc.perform(put("/api/personal/preferencias")
                 .header(HttpHeaders.AUTHORIZATION, ADMIN).contentType(MediaType.APPLICATION_JSON).content("""
