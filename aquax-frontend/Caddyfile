@@ -1,0 +1,11 @@
+:8080 {
+    handle /api/* {
+        reverse_proxy aquax-api.railway.internal:8080
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}
