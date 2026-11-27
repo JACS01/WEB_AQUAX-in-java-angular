@@ -5,7 +5,7 @@ import { ProductoCard } from './producto-card';
 @Component({
   imports: [ProductoCard],
   template:
-    '<app-producto-card [producto]="producto" [cantidad]="cantidad()" (cantidadChange)="cantidad.set($event)" />',
+    '<app-producto-card [producto]="producto" [cantidad]="cantidad()" [maxCantidad]="5" (cantidadChange)="cantidad.set($event)" />',
 })
 class CatalogoHost {
   readonly producto = {
@@ -22,6 +22,7 @@ describe('ProductoCard communication', () => {
 
   it('asocia cada fotografía por producto aunque cambie el orden del catálogo', () => {
     const fixture = TestBed.createComponent(ProductoCard);
+    fixture.componentRef.setInput('maxCantidad', 5);
     for (const [nombre, filename] of [
       ['Caja 20L', 'caja.png'],
       ['Paquete 15 x 500 ml', 'botellas.png'],
@@ -72,7 +73,7 @@ describe('ProductoCard communication', () => {
     const fixture = TestBed.createComponent(CatalogoHost);
     await fixture.whenStable();
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
-    for (const value of ['1.5', '-1', '10000', '']) {
+    for (const value of ['1.5', '-1', '6', '']) {
       input.value = value;
       input.dispatchEvent(new Event('change', { bubbles: true }));
       await fixture.whenStable();
@@ -96,13 +97,13 @@ describe('ProductoCard communication', () => {
     expect(minus.disabled).toBe(true);
     minus.click();
     expect(fixture.componentInstance.cantidad()).toBe(0);
-    fixture.componentInstance.cantidad.set(9999);
+    fixture.componentInstance.cantidad.set(5);
     await fixture.whenStable();
     const plus = element.querySelector<HTMLButtonElement>(
       '[aria-label="Agregar una unidad de Bidón familiar"]',
     )!;
     expect(plus.disabled).toBe(true);
     plus.click();
-    expect(fixture.componentInstance.cantidad()).toBe(9999);
+    expect(fixture.componentInstance.cantidad()).toBe(5);
   });
 });

@@ -67,6 +67,39 @@ class AquaxAuditoriaEntradaTest {
     }
 
     @Test
+    void pedidosPublicosYDePersonalLimitanLaSumaDeUnidades() throws Exception {
+        String solicitud = """
+                {"nombreCliente":"Prueba de límite","telefonoCliente":"999888777","direccionEntrega":"Prueba",
+                 "detalles":[{"productoId":1,"cantidad":%d},{"productoId":2,"cantidad":%d}]}
+                """;
+        String detalle = "El pedido no puede superar 30 unidades en total.";
+        long pedidosAntes = jdbc.queryForObject("select count(*) from pedidos", Long.class);
+        long detallesAntes = jdbc.queryForObject("select count(*) from detalles_pedido", Long.class);
+
+        for (String cuerpo : java.util.List.of(solicitud.formatted(20, 11),
+                solicitud.formatted(Integer.MAX_VALUE, Integer.MAX_VALUE))) {
+            mvc.perform(post("/api/pedidos").contentType(MediaType.APPLICATION_JSON).content(cuerpo))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.detail").value(detalle));
+        }
+        mvc.perform(post("/api/personal/pedidos").header(HttpHeaders.AUTHORIZATION, ADMIN)
+                .contentType(MediaType.APPLICATION_JSON).content(solicitud.formatted(20, 11)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(detalle));
+        assertThat(jdbc.queryForObject("select count(*) from pedidos", Long.class)).isEqualTo(pedidosAntes);
+        assertThat(jdbc.queryForObject("select count(*) from detalles_pedido", Long.class)).isEqualTo(detallesAntes);
+
+        String pedidoValido = solicitud.formatted(20, 10);
+        mvc.perform(post("/api/pedidos").contentType(MediaType.APPLICATION_JSON).content(pedidoValido))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cantidadProducto").value(30));
+        mvc.perform(post("/api/personal/pedidos").header(HttpHeaders.AUTHORIZATION, ADMIN)
+                .contentType(MediaType.APPLICATION_JSON).content(pedidoValido))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cantidadProducto").value(30));
+    }
+
+    @Test
     void zoomFraccionarioSeRechaza() throws Exception {
         var resultado = mvc.perform(put("/api/personal/preferencias")
                 .header(HttpHeaders.AUTHORIZATION, ADMIN).contentType(MediaType.APPLICATION_JSON).content("""

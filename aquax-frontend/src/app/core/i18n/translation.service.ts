@@ -42,6 +42,7 @@ const serverMessages: Record<string, TranslationKey> = {
   'La contraseña debe ocupar como máximo 72 bytes en UTF-8.': 'validation.passwordBytes',
   'La nueva contraseña debe ocupar como máximo 72 bytes en UTF-8.': 'validation.passwordBytes',
   'Usuario o contraseña incorrectos.': 'serverErrors.credentials',
+  'El pedido no puede superar 30 unidades en total.': 'serverErrors.orderLimit',
 };
 
 const fieldNames: Record<string, TranslationKey> = {

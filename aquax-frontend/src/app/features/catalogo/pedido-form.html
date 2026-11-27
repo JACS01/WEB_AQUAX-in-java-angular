@@ -63,7 +63,7 @@
           @if (units()) {
             <a class="text-link" href="#pedido-carrito">{{ i18n.t('orderForm.viewCart') }}</a>
           } @else {
-            <span class="muted">{{ i18n.t('orderForm.unitPrices') }}</span>
+            <span class="muted">{{ i18n.t('orderForm.orderLimit', { limit: orderLimit }) }}</span>
           }
         </div>
         @if (loading()) {
@@ -85,8 +85,10 @@
             <app-producto-card
               [producto]="product"
               [cantidad]="quantity(product.id)"
+              [maxCantidad]="quantityLimit(product.id)"
               [indice]="i"
               (cantidadChange)="setQuantity(product.id, $event)"
+              (limiteExcedido)="showOrderLimit()"
             />
           }
         </div>
@@ -126,7 +128,7 @@
                 <input
                   type="number"
                   min="0"
-                  [max]="maxQuantity"
+                  [max]="quantityLimit(line.product.id)"
                   step="1"
                   [attr.aria-label]="
                     i18n.t('orderForm.cartQuantity', { name: line.product.nombre })
@@ -162,7 +164,9 @@
       <div class="checkout-total" aria-live="polite">
         <span>
           {{ i18n.t('orderForm.estimatedTotal') }}
-          <small>{{ i18n.t('orderForm.units', { count: units() }) }}</small>
+          <small>{{
+            i18n.t('orderForm.unitLimitUsage', { count: units(), limit: orderLimit })
+          }}</small>
         </span>
         <strong>{{ total() | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</strong>
       </div>

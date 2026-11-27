@@ -51,7 +51,7 @@ export class PedidoForm implements OnInit {
   readonly loading = signal(false);
   readonly busy = signal(false);
   readonly reviewing = signal(false);
-  readonly maxQuantity = 9999;
+  readonly orderLimit = 30;
   private readonly submitError = signal<OrderFormError | null>(null);
   private readonly catalogError = signal<{ value: unknown } | null>(null);
   readonly error = computed(() => {
@@ -80,7 +80,12 @@ export class PedidoForm implements OnInit {
   );
   readonly units = computed(() => this.cart().reduce((sum, line) => sum + line.quantity, 0));
   readonly canContinue = computed(
-    () => !this.busy() && !this.loading() && !this.catalogError() && this.units() > 0,
+    () =>
+      !this.busy() &&
+      !this.loading() &&
+      !this.catalogError() &&
+      this.units() > 0 &&
+      this.units() <= this.orderLimit,
   );
   readonly form = inject(FormBuilder).nonNullable.group({
     nombreCliente: ['', [notBlank, Validators.maxLength(150)]],
@@ -109,18 +114,31 @@ export class PedidoForm implements OnInit {
   quantity(id: number) {
     return this.quantities()[id] ?? 0;
   }
+  quantityLimit(id: number) {
+    return Math.max(0, this.orderLimit - this.units() + this.quantity(id));
+  }
+  showOrderLimit() {
+    this.submitError.set({
+      kind: 'validation',
+      key: 'orderForm.orderLimit',
+      params: { limit: this.orderLimit },
+    });
+  }
   setQuantity(id: number, value: number) {
     if (
-      !this.busy() &&
-      this.products().some((p) => p.id === id) &&
-      Number.isInteger(value) &&
-      value >= 0 &&
-      value <= this.maxQuantity &&
-      value !== this.quantity(id)
-    ) {
-      this.quantities.update((q) => ({ ...q, [id]: value }));
-      this.submitError.set(null);
+      this.busy() ||
+      !this.products().some((p) => p.id === id) ||
+      !Number.isInteger(value) ||
+      value < 0 ||
+      value === this.quantity(id)
+    )
+      return;
+    if (value > this.quantityLimit(id)) {
+      this.showOrderLimit();
+      return;
     }
+    this.quantities.update((q) => ({ ...q, [id]: value }));
+    this.submitError.set(null);
   }
   changeQuantity(id: number, e: Event) {
     const input = e.target as HTMLInputElement;
@@ -157,10 +175,12 @@ export class PedidoForm implements OnInit {
       productoId: product.id,
       cantidad: quantity,
     }));
-    if (
-      detalles.some(({ cantidad }) => !Number.isInteger(cantidad) || cantidad > this.maxQuantity)
-    ) {
+    if (detalles.some(({ cantidad }) => !Number.isInteger(cantidad))) {
       this.submitError.set({ kind: 'validation', key: 'orderForm.invalidQuantities' });
+      return null;
+    }
+    if (this.units() > this.orderLimit) {
+      this.showOrderLimit();
       return null;
     }
     return { ...this.form.getRawValue(), detalles };

@@ -133,13 +133,16 @@ class AquaxSqliteTest {
         jdbc.update("update productos set precio = ? where id = 1", "99999999.99");
         var grande = enviar("POST", "/api/pedidos", null, """
                 {"nombreCliente":"Monto exacto","telefonoCliente":"999888777","direccionEntrega":"Direccion SQLite",
-                 "detalles":[{"productoId":1,"cantidad":2147483647}]}
+                 "detalles":[{"productoId":1,"cantidad":30}]}
                 """).andExpect(status().isCreated())
                 .andExpect(jsonPath("$.numeroPedido").value("AQX-0003"))
                 .andReturn().getResponse().getContentAsString();
-        assertThat(grande).contains("\"total\":214748364678525163.53");
+        assertThat(grande).contains("\"total\":2999999999.70");
         assertThat(jdbc.queryForObject("select subtotal from detalles_pedido where pedido_id=3", String.class))
-                .isEqualTo("214748364678525163.53");
+                .isEqualTo("2999999999.70");
+        // Simula un pedido histórico para verificar su recuperación después de reiniciar.
+        jdbc.update("update detalles_pedido set cantidad = ?, subtotal = ? where pedido_id = 3",
+                Integer.MAX_VALUE, "214748364678525163.53");
         jdbc.update("update productos set precio = ? where id = 1", "13.27");
 
         enviar("POST", "/api/admin/usuarios", ADMIN, """

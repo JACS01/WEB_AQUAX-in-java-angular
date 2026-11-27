@@ -59,6 +59,60 @@ describe('PedidoForm', () => {
     expect(component.form.controls.nombreCliente.touched).toBe(true);
   });
 
+  it('shares the 30-unit limit between the catalog and the cart and allows exactly 30', () => {
+    const element: HTMLElement = fixture.nativeElement;
+    component.form.setValue(customer);
+    component.setQuantity(1, 28);
+    component.setQuantity(2, 2);
+    fixture.detectChanges();
+
+    const catalogInput = element.querySelector<HTMLInputElement>('app-producto-card input')!;
+    const add = element.querySelector<HTMLButtonElement>(
+      '[aria-label="Agregar una unidad de Bidón"]',
+    )!;
+    expect(add.disabled).toBe(true);
+    expect(catalogInput.max).toBe('28');
+    catalogInput.value = '29';
+    catalogInput.dispatchEvent(new Event('change'));
+    expect(catalogInput.value).toBe('28');
+    expect(component.error()).toContain('30 unidades');
+
+    component.reviewOrder();
+    fixture.detectChanges();
+    const cartInput = element.querySelector<HTMLInputElement>('.cart-line input')!;
+    expect(cartInput.max).toBe('28');
+    cartInput.value = '9999';
+    cartInput.dispatchEvent(new Event('change'));
+    expect(cartInput.value).toBe('28');
+    expect(component.units()).toBe(30);
+
+    component.setQuantity(2, 1);
+    fixture.detectChanges();
+    expect(cartInput.max).toBe('29');
+    cartInput.value = '29';
+    cartInput.dispatchEvent(new Event('change'));
+    expect(component.units()).toBe(30);
+    http.expectNone(`${base}/pedidos`);
+    component.submit();
+    const request = http.expectOne(`${base}/pedidos`);
+    expect(request.request.body.detalles).toEqual([
+      { productoId: 1, cantidad: 29 },
+      { productoId: 2, cantidad: 1 },
+    ]);
+    request.flush({ id: 3 });
+  });
+
+  it('checks the current total again at confirmation', () => {
+    component.form.setValue(customer);
+    component.setQuantity(1, 30);
+    component.reviewOrder();
+    component.quantities.set({ 1: 30, 2: 1 });
+    expect(component.canContinue()).toBe(false);
+    component.submit();
+    expect(component.error()).toContain('30 unidades');
+    http.expectNone(`${base}/pedidos`);
+  });
+
   it('posts selected product IDs and quantities only once through pending and success states', () => {
     component.form.setValue(customer);
     component.setQuantity(2, 3);

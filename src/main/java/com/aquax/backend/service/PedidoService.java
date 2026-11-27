@@ -41,6 +41,7 @@ import com.aquax.backend.repository.UsuarioRepository;
 @Service
 public class PedidoService {
 
+    private static final int MAX_UNIDADES_POR_PEDIDO = 30;
     private static final Map<String, String> CAMPOS_ORDEN = Map.of(
             "id", "id", "numeroPedido", "id", "nombreCliente", "nombreCliente",
             "telefonoCliente", "telefonoCliente", "fechaRegistro", "fechaRegistro",
@@ -89,6 +90,14 @@ public class PedidoService {
     }
 
     private void guardarPedido(CrearPedidoRequest solicitud, Pedido pedido) {
+        long totalUnidades = solicitud.detalles().stream()
+                .mapToLong(DetallePedidoRequest::cantidad)
+                .sum();
+        if (totalUnidades > MAX_UNIDADES_POR_PEDIDO) {
+            throw new IllegalArgumentException(
+                    "El pedido no puede superar " + MAX_UNIDADES_POR_PEDIDO + " unidades en total.");
+        }
+
         List<Long> idsProducto = solicitud.detalles().stream()
                 .map(DetallePedidoRequest::productoId)
                 .distinct()

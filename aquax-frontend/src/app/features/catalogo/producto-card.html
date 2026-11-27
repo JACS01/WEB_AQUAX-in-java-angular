@@ -32,14 +32,14 @@
         ><input
           type="number"
           min="0"
-          max="9999"
+          [max]="maxCantidad()"
           step="1"
           [attr.aria-label]="i18n.t('catalog.quantity', { name: producto().nombre })"
           [value]="cantidad()"
           (change)="changeQuantity($event)"
         /><button
           type="button"
-          [disabled]="cantidad() >= 9999"
+          [disabled]="cantidad() >= maxCantidad()"
           [attr.aria-label]="i18n.t('catalog.addUnit', { name: producto().nombre })"
           (click)="emitCantidad(cantidad() + 1)"
         >

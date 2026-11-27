@@ -15,8 +15,10 @@ export class ProductoCard {
   readonly i18n = inject(TranslationService);
   readonly producto = input.required<Producto>();
   readonly cantidad = input(0);
+  readonly maxCantidad = input.required<number>();
   readonly indice = input(0);
   readonly cantidadChange = output<number>();
+  readonly limiteExcedido = output<void>();
   readonly image = computed(() => {
     const name = this.producto()
       .nombre.normalize('NFD')
@@ -28,19 +30,20 @@ export class ProductoCard {
     return null;
   });
 
-  emitCantidad(value: number): void {
-    if (Number.isInteger(value) && value >= 0 && value <= 9999) {
-      this.cantidadChange.emit(value);
+  emitCantidad(value: number): boolean {
+    if (!Number.isInteger(value) || value < 0) return false;
+    if (value > this.maxCantidad()) {
+      this.limiteExcedido.emit();
+      return false;
     }
+    this.cantidadChange.emit(value);
+    return true;
   }
 
   changeQuantity(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = Number(input.value);
-    if (!input.value.trim() || !Number.isInteger(value) || value < 0 || value > 9999) {
+    if (!input.value.trim() || !this.emitCantidad(Number(input.value))) {
       input.value = String(this.cantidad());
-      return;
     }
-    this.cantidadChange.emit(value);
   }
 }

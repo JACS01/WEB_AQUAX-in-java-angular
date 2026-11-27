@@ -132,9 +132,12 @@ class AquaxPagadosTest {
 
         jdbc.update("update productos set precio = ? where id = 1", new BigDecimal("99999999.99"));
         long extremo = crear("CLIENTE", """
-                {"nombreCliente":"Cliente extremo","telefonoCliente":"999888777","direccionEntrega":"Direccion",
-                "detalles":[{"productoId":1,"cantidad":2147483647}]}
+                {"nombreCliente":"Cliente histórico","telefonoCliente":"999888777","direccionEntrega":"Direccion",
+                "detalles":[{"productoId":1,"cantidad":30}]}
                 """);
+        // Simula un pedido guardado antes de limitar la cantidad de unidades.
+        jdbc.update("update detalles_pedido set cantidad = ?, subtotal = ? where pedido_id = ?",
+                Integer.MAX_VALUE, "214748364678525163.53", extremo);
         pago(extremo, "PAGADO");
         jdbc.update("update pedidos set fecha_registro = ? where id = ?",
                 java.sql.Date.valueOf("2030-01-01"), primeroPorFecha);
