@@ -123,7 +123,7 @@ describe('Contratos de validación de acceso, catálogo y cuenta', () => {
   ])('pedido rechaza %s fuera del contrato sin POST (%s)', (field, value) => {
     const page = pedido();
     page.form.get(field)!.setValue(value);
-    page.submit();
+    page.reviewOrder();
     http.expectNone((r) => r.method === 'POST');
     expect(page.form.get(field)!.touched).toBe(true);
   });
@@ -135,6 +135,7 @@ describe('Contratos de validación de acceso, catálogo y cuenta', () => {
       direccionEntrega: 'a'.repeat(300),
       observaciones: 'a'.repeat(500),
     });
+    page.reviewOrder();
     page.submit();
     http.expectOne('/api/pedidos').flush({ id: 1 });
   });
@@ -144,7 +145,8 @@ describe('Contratos de validación de acceso, catálogo y cuenta', () => {
       const page = pedido();
       page.setQuantity(1, 0);
       page.setQuantity(1, value);
-      page.submit();
+      page.reviewOrder();
+      expect(page.reviewing()).toBe(false);
       http.expectNone((r) => r.method === 'POST');
       expect(page.units()).toBe(0);
     },
@@ -153,9 +155,11 @@ describe('Contratos de validación de acceso, catálogo y cuenta', () => {
     const page = pedido();
     page.setQuantity(1, 0);
     page.setQuantity(999, 2);
-    page.submit();
+    page.reviewOrder();
+    expect(page.reviewing()).toBe(false);
     http.expectNone((r) => r.method === 'POST');
     page.setQuantity(1, 1);
+    page.reviewOrder();
     page.load();
     page.submit();
     http.expectNone((r) => r.method === 'POST');
@@ -163,6 +167,7 @@ describe('Contratos de validación de acceso, catálogo y cuenta', () => {
   });
   it('pedido bloquea el envío si la última carga del catálogo falló', () => {
     const page = pedido();
+    page.reviewOrder();
     page.load();
     http
       .expectOne('/api/productos')

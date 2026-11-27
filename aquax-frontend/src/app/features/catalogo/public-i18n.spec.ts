@@ -104,6 +104,7 @@ describe('Idiomas públicos sin modificar datos ni repetir solicitudes', () => {
     const page = fixture.componentInstance;
     page.form.setValue(customer);
     page.setQuantity(product.id, 2);
+    page.reviewOrder();
     page.submit();
     const request = http.expectOne('/api/pedidos');
     expect(request.request.body).toEqual({
@@ -136,7 +137,7 @@ describe('Idiomas públicos sin modificar datos ni repetir solicitudes', () => {
     const page = fixture.componentInstance;
     page.form.setValue(customer);
     page.quantities.set({ 7: 1.5 });
-    page.submit();
+    page.reviewOrder();
     expect(page.error()).toContain('cantidades enteras');
     i18n.use('en');
     expect(page.error()).toBe(i18n.t('orderForm.invalidQuantities'));

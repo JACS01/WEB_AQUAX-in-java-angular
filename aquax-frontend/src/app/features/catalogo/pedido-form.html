@@ -2,7 +2,7 @@
   <section class="card order-success" aria-live="polite">
     <span class="success-icon"><app-icon name="check" /></span
     ><span class="eyebrow">{{ i18n.t('orderForm.registeredEyebrow') }}</span>
-    <h2>{{ i18n.t('orderForm.thanks') }}</h2>
+    <h2 #confirmationHeading tabindex="-1">{{ i18n.t('orderForm.thanks') }}</h2>
     <p>
       {{ i18n.t('orderForm.registeredPrefix') }} <strong>{{ pedido.numeroPedido }}</strong>
       {{ i18n.t('orderForm.registeredSuffix') }}
@@ -19,92 +19,216 @@
   </section>
 } @else {
   <div class="order-layout">
-    <section>
-      <div class="section-label">
-        <span class="eyebrow">{{ i18n.t('orderForm.productsStep') }}</span><span class="muted">{{
-          i18n.t('orderForm.unitPrices')
-        }}</span>
-      </div>
-      @if (loading()) {
-        <div class="card empty" role="status">{{ i18n.t('orderForm.loading') }}</div>
-      }
-      @if (loadError()) {
-        <div class="notice error" role="alert">
-          {{ loadError() }}
-          <button class="text-link" (click)="load()">{{ i18n.t('orderForm.retry') }}</button>
+    @if (reviewing()) {
+      @let delivery = form.getRawValue();
+      <section class="card delivery-review" aria-labelledby="pedido-review-title">
+        <h2 id="pedido-review-title" #reviewHeading tabindex="-1">
+          {{ i18n.t('orderForm.reviewTitle') }}
+        </h2>
+        <dl class="delivery-details">
+          <div>
+            <dt>{{ i18n.t('orderForm.customer') }}</dt>
+            <dd>{{ delivery.nombreCliente }}</dd>
+          </div>
+          <div>
+            <dt>{{ i18n.t('orderForm.phone') }}</dt>
+            <dd>{{ delivery.telefonoCliente }}</dd>
+          </div>
+          <div>
+            <dt>{{ i18n.t('orderForm.address') }}</dt>
+            <dd>{{ delivery.direccionEntrega }}</dd>
+          </div>
+          @if (delivery.observaciones.trim()) {
+            <div>
+              <dt>{{ i18n.t('orderForm.notes') }}</dt>
+              <dd>{{ delivery.observaciones }}</dd>
+            </div>
+          }
+        </dl>
+        <button
+          type="button"
+          class="button secondary"
+          [disabled]="busy()"
+          (click)="editOrder('delivery')"
+        >
+          {{ i18n.t('orderForm.editDelivery') }}
+        </button>
+      </section>
+    } @else {
+      <section>
+        <div class="section-label">
+          <span class="eyebrow" #catalogHeading tabindex="-1">{{
+            i18n.t('orderForm.productsStep')
+          }}</span>
+          @if (units()) {
+            <a class="text-link" href="#pedido-carrito">{{ i18n.t('orderForm.viewCart') }}</a>
+          } @else {
+            <span class="muted">{{ i18n.t('orderForm.unitPrices') }}</span>
+          }
         </div>
-      }
-      @if (!loading() && !loadError() && !products().length) {
-        <div class="card empty">{{ i18n.t('orderForm.empty') }}</div>
-      }
-      <div class="product-grid">
-        @for (product of products(); track product.id; let i = $index) {
-          <app-producto-card
-            [producto]="product"
-            [cantidad]="quantity(product.id)"
-            [indice]="i"
-            (cantidadChange)="setQuantity(product.id, $event)"
-          />
+        @if (loading()) {
+          <div class="card empty" role="status">{{ i18n.t('orderForm.loading') }}</div>
+        }
+        @if (loadError()) {
+          <div class="notice error" role="alert">
+            {{ loadError() }}
+            <button type="button" class="text-link" (click)="load()">
+              {{ i18n.t('orderForm.retry') }}
+            </button>
+          </div>
+        }
+        @if (!loading() && !loadError() && !products().length) {
+          <div class="card empty">{{ i18n.t('orderForm.empty') }}</div>
+        }
+        <div class="product-grid">
+          @for (product of products(); track product.id; let i = $index) {
+            <app-producto-card
+              [producto]="product"
+              [cantidad]="quantity(product.id)"
+              [indice]="i"
+              (cantidadChange)="setQuantity(product.id, $event)"
+            />
+          }
+        </div>
+      </section>
+    }
+    <aside class="card checkout" id="pedido-carrito" aria-labelledby="pedido-cart-title">
+      <div class="cart-heading">
+        <h2 id="pedido-cart-title" #cartHeading tabindex="-1">
+          {{ i18n.t('orderForm.cartTitle') }}
+        </h2>
+        @if (reviewing()) {
+          <button
+            type="button"
+            class="text-link"
+            [disabled]="busy()"
+            (click)="editOrder('products')"
+          >
+            {{ i18n.t('orderForm.addProducts') }}
+          </button>
         }
       </div>
-    </section>
-    <aside class="card checkout">
-      <span class="eyebrow">{{ i18n.t('orderForm.deliveryStep') }}</span>
-      <h2>{{ i18n.t('orderForm.title') }}</h2>
-      <p class="muted">{{ i18n.t('orderForm.description') }}</p>
+      @if (cart().length) {
+        <ul class="cart-lines">
+          @for (line of cart(); track line.product.id) {
+            <li class="cart-line">
+              <div class="cart-product">
+                <strong>{{ line.product.nombre }}</strong>
+                <small>{{
+                  i18n.t('orderForm.pricePerUnit', {
+                    price:
+                      (line.product.precio
+                        | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale()) ?? '',
+                  })
+                }}</small>
+              </div>
+              <div class="cart-line-actions">
+                <input
+                  type="number"
+                  min="0"
+                  [max]="maxQuantity"
+                  step="1"
+                  [attr.aria-label]="
+                    i18n.t('orderForm.cartQuantity', { name: line.product.nombre })
+                  "
+                  [disabled]="busy()"
+                  [value]="line.quantity"
+                  (change)="changeQuantity(line.product.id, $event)"
+                />
+                <button
+                  type="button"
+                  class="text-link"
+                  [attr.aria-label]="
+                    i18n.t('orderForm.removeProduct', { name: line.product.nombre })
+                  "
+                  [disabled]="busy()"
+                  (click)="removeFromCart(line.product.id)"
+                >
+                  {{ i18n.t('orderForm.remove') }}
+                </button>
+                <span class="cart-subtotal">
+                  <small>{{ i18n.t('orderForm.subtotal') }}</small>
+                  <strong>{{
+                    line.subtotalCents / 100 | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale()
+                  }}</strong>
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="cart-empty muted">{{ i18n.t('orderForm.cartEmpty') }}</p>
+      }
+      <div class="checkout-total" aria-live="polite">
+        <span>
+          {{ i18n.t('orderForm.estimatedTotal') }}
+          <small>{{ i18n.t('orderForm.units', { count: units() }) }}</small>
+        </span>
+        <strong>{{ total() | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</strong>
+      </div>
       @if (error()) {
         <div class="notice error" role="alert">{{ error() }}</div>
       }
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <label class="field"
-          >{{ i18n.t('orderForm.customer')
-          }}<input
-            formControlName="nombreCliente"
-            autocomplete="name"
-            maxlength="150"
-            [placeholder]="i18n.t('orderForm.namePlaceholder')" /><app-field-error
-            [control]="form.controls.nombreCliente" /></label
-        ><label class="field"
-          >{{ i18n.t('orderForm.phone')
-          }}<input
-            formControlName="telefonoCliente"
-            type="tel"
-            autocomplete="tel"
-            maxlength="15"
-            [placeholder]="i18n.t('orderForm.phonePlaceholder')" /><app-field-error
-            [control]="form.controls.telefonoCliente" /></label
-        ><label class="field"
-          >{{ i18n.t('orderForm.address')
-          }}<input
-            formControlName="direccionEntrega"
-            autocomplete="street-address"
-            maxlength="300"
-            [placeholder]="i18n.t('orderForm.addressPlaceholder')" /><app-field-error
-            [control]="form.controls.direccionEntrega" /></label
-        ><label class="field"
-          >{{ i18n.t('orderForm.notes') }}
-          <span class="optional">{{ i18n.t('orderForm.optional') }}</span><textarea
-            formControlName="observaciones"
-            maxlength="500"
-            rows="2"
-            [placeholder]="i18n.t('orderForm.notesPlaceholder')"
-          ></textarea>
-        </label>
-        <div class="checkout-total">
-          <span
-            >{{ i18n.t('orderForm.estimatedTotal') }}
-            <small>{{ i18n.t('orderForm.units', { count: units() }) }}</small></span
-          ><strong>{{ total() | currency: 'PEN' : 'symbol' : '1.2-2' : i18n.locale() }}</strong>
-        </div>
-        <p class="muted small">
-          {{ i18n.t('orderForm.totalNote') }}
-        </p>
-        <button class="button full" [disabled]="busy() || !units() || loading() || !!loadError()">
-          {{ i18n.t(busy() ? 'orderForm.registering' : 'orderForm.confirm')
-          }}<app-icon name="arrow" />
+      @if (reviewing()) {
+        @if (loadError()) {
+          <div class="notice error" role="alert">
+            {{ loadError() }}
+            <button type="button" class="text-link" (click)="load()">
+              {{ i18n.t('orderForm.retry') }}
+            </button>
+          </div>
+        }
+        <p class="muted small">{{ i18n.t('orderForm.totalNote') }}</p>
+        <button type="button" class="button full" [disabled]="!canContinue()" (click)="submit()">
+          {{ i18n.t(busy() ? 'orderForm.registering' : 'orderForm.confirm') }}
+          <app-icon name="check" />
         </button>
-        <p class="checkout-note"><app-icon name="shield" /> {{ i18n.t('orderForm.privacy') }}</p>
-      </form>
+      } @else {
+        <h3 #deliveryHeading tabindex="-1" class="delivery-heading">
+          {{ i18n.t('orderForm.deliveryTitle') }}
+        </h3>
+        <form [formGroup]="form" (ngSubmit)="reviewOrder()">
+          <label class="field"
+            >{{ i18n.t('orderForm.customer')
+            }}<input
+              formControlName="nombreCliente"
+              autocomplete="name"
+              maxlength="150"
+              [placeholder]="i18n.t('orderForm.namePlaceholder')" /><app-field-error
+              [control]="form.controls.nombreCliente" /></label
+          ><label class="field"
+            >{{ i18n.t('orderForm.phone')
+            }}<input
+              formControlName="telefonoCliente"
+              type="tel"
+              autocomplete="tel"
+              maxlength="15"
+              [placeholder]="i18n.t('orderForm.phonePlaceholder')" /><app-field-error
+              [control]="form.controls.telefonoCliente" /></label
+          ><label class="field"
+            >{{ i18n.t('orderForm.address')
+            }}<input
+              formControlName="direccionEntrega"
+              autocomplete="street-address"
+              maxlength="300"
+              [placeholder]="i18n.t('orderForm.addressPlaceholder')" /><app-field-error
+              [control]="form.controls.direccionEntrega" /></label
+          ><label class="field"
+            >{{ i18n.t('orderForm.notes') }}
+            <span class="optional">{{ i18n.t('orderForm.optional') }}</span><textarea
+              formControlName="observaciones"
+              maxlength="500"
+              rows="2"
+              [placeholder]="i18n.t('orderForm.notesPlaceholder')"
+            ></textarea>
+            <app-field-error [control]="form.controls.observaciones" />
+          </label>
+          <button type="submit" class="button full" [disabled]="!canContinue()">
+            {{ i18n.t('orderForm.reviewTitle') }}<app-icon name="arrow" />
+          </button>
+          <p class="checkout-note"><app-icon name="shield" /> {{ i18n.t('orderForm.privacy') }}</p>
+        </form>
+      }
     </aside>
   </div>
 }
